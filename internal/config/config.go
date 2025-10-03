@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -8,23 +9,28 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+type Config struct {
+	Env        string `yaml:"env" env-default:"production"`
+	Database   `yaml:"database"`
+	HTTPServer `yaml:"http_server"`
+}
+
 type Database struct {
-	user     string `yaml:"user" env-default:"postgres"`
-	password string `yaml:"password" env-default:"postgres"`
-	host     string `yaml:"host" env-default:"localhost"`
-	port     int    `yaml:"port" env-default:"5432"`
+	User     string `yaml:"user" env-default:"postgres"`
+	Password string `yaml:"password" env-default:"postgres"`
+	Host     string `yaml:"host" env-default:"localhost"`
+	Port     int    `yaml:"port" env-default:"5432"`
 	DbName   string `yaml:"db_name" env-required:"true"`
+}
+
+func (d *Database) BuildURL() string {
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s", d.User, d.Password, d.Host, d.Port, d.DbName)
 }
 
 type HTTPServer struct {
 	Address     string        `yaml:"address" env-default:"localhost:8080"`
 	TimeOut     time.Duration `yaml:"timeout" env-default:"5s"`
 	IdleTimeOut time.Duration `yaml:"idle_timeout" env-default:"60s"`
-}
-type Config struct {
-	Env        string `yaml:"env" env-default:"production"`
-	Database   `yaml:"database"`
-	HTTPServer `yaml:"http_server"`
 }
 
 func MustLoad() *Config {
@@ -37,7 +43,7 @@ func MustLoad() *Config {
 	var cfg Config
 
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatal("Cant read config file")
+		log.Fatal("Cant read config file", err)
 	}
 
 	return &cfg
