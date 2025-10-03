@@ -1,0 +1,12 @@
+env: "local"
+
+http_server:
+  address: "localhost:8080"
+  timeout: 4s
+  idle_timeout: 60s
+database:
+  user: "postgres"
+  password: "admin"
+  host: "84.22.150.38"
+  port: "5432"
+  db_name: realtimemap
