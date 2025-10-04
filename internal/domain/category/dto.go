@@ -1,10 +1,5 @@
 package category
 
-type PaginationCategoryResponse struct {
-	Result     []CategoryResponse `json:"result"`
-	Total      int                `json:"total"`
-	TotalPages int                `json:"total_pages"`
-}
 type CategoryResponse struct {
 	ID    int    `json:"id"`
 	Name  string `json:"category_name"`

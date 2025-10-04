@@ -58,3 +58,12 @@ func (r *PgCategoryRepository) Count(ctx context.Context) (int, error) {
 	}
 	return count, nil
 }
+
+func (r *PgCategoryRepository) Exists(ctx context.Context, id int) (bool, error) {
+	var exist bool
+	err := r.db.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)", id).Scan(&exist)
+	if err != nil {
+		return false, err
+	}
+	return exist, nil
+}
