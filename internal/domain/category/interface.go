@@ -1,9 +1,12 @@
 package category
 
-import "context"
+import (
+	"context"
+	"realtimemap-service/internal/pkg/pagination"
+)
 
 type Service interface {
-	GetAll(ctx context.Context, page, pageSize int) (*PaginationCategoryResponse, error)
+	GetAll(ctx context.Context, page, pageSize int) (*pagination.Response[CategoryResponse], error)
 }
 
 type Repository interface {

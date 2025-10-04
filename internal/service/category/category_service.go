@@ -2,7 +2,6 @@ package category
 
 import (
 	"context"
-	"math"
 	"realtimemap-service/internal/domain/category"
 
 	categoryrepo "realtimemap-service/internal/domain/category"
@@ -18,7 +17,7 @@ func NewServiceCategory(categoryRepo categoryrepo.Repository) category.Service {
 	return &serviceCategory{categoryRepo}
 }
 
-func (s *serviceCategory) GetAll(ctx context.Context, page, pageSize int) (*category.PaginationCategoryResponse, error) {
+func (s *serviceCategory) GetAll(ctx context.Context, page, pageSize int) (*pagination.Response[category.CategoryResponse], error) {
 	offset := pagination.Offset(page, pageSize)
 	var categories []*category.Category
 	var categoryErr, countErr error
@@ -45,12 +44,8 @@ func (s *serviceCategory) GetAll(ctx context.Context, page, pageSize int) (*cate
 	if countErr != nil {
 		return nil, countErr
 	}
-	serializedData := category.ToListCategoryResponse(categories)
-	response := &category.PaginationCategoryResponse{
-		Result:     serializedData,
-		Total:      total,
-		TotalPages: int(math.Ceil(float64(total) / float64(pageSize))),
-	}
+
+	response := pagination.NewPaginationResponse(category.ToListCategoryResponse(categories), total, pageSize)
 	return response, nil
 
 }
