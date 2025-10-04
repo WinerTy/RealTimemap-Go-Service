@@ -6,10 +6,13 @@ import (
 	"os"
 	"realtimemap-service/internal/config"
 	"realtimemap-service/internal/database/postgres"
-	v1 "realtimemap-service/internal/handler/http/v1"
+	"realtimemap-service/internal/pkg/logger/sl"
 	repository "realtimemap-service/internal/repository/category/postgres"
 	service "realtimemap-service/internal/service/category"
+	http "realtimemap-service/internal/transport/http/v1/category" // TODO временно
+	"time"
 
+	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,18 +26,23 @@ func main() {
 	cfg := config.MustLoad()
 	log := setupLogger(cfg.Env)
 	ctx := context.Background()
+
+	store := persistence.NewInMemoryStore(time.Minute) // TODO Мб сделаь самописный с помощью Redis?
+
 	pool, err := postgres.NewStorage(ctx, cfg.Database.BuildURL())
+
 	if err != nil {
-		log.Error("could not connect to database", err)
+		log.Error("could not connect to database", sl.Err(err))
 		os.Exit(1)
 	}
 	defer pool.Close()
 
-	// TODO Это на тест :)
 	repo := repository.NewPgCategoryRepository(pool)
 	serv := service.NewServiceCategory(repo)
+
 	r := gin.Default()
-	v1.InitCategoryRoutes(r.Group("/api"), serv)
+	http.InitCategoryRoutes(r.Group("/api"), serv, store)
+
 	r.Run()
 }
 

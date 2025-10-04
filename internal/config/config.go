@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"realtimemap-service/internal/pkg/logger/sl"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -37,13 +38,13 @@ func MustLoad() *Config {
 	configPath := "./config/config.yaml"
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file not found: %s", configPath)
+		log.Fatal("Config file does not exist", sl.Err(err))
 	}
 
 	var cfg Config
 
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatal("Cant read config file", err)
+		log.Fatal("Cant read config file", sl.Err(err))
 	}
 
 	return &cfg
