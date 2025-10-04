@@ -10,7 +10,7 @@ type serviceCategory struct {
 	categoryRepo category.Repository
 }
 
-func NewServiceCategory(categoryRepo category.Repository) ServiceCategory {
+func NewServiceCategory(categoryRepo category.Repository) CategoryService {
 	return &serviceCategory{categoryRepo}
 }
 

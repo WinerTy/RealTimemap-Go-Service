@@ -4,9 +4,13 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"realtimemap-service/internal/app/repository/category"
 	"realtimemap-service/internal/config"
 	"realtimemap-service/internal/database/postgres"
+	v1 "realtimemap-service/internal/handler/http/v1"
+	repository "realtimemap-service/internal/repository/category/postgres"
+	service "realtimemap-service/internal/service/category"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -27,17 +31,11 @@ func main() {
 	defer pool.Close()
 
 	// TODO Это на тест :)
-	repo := category.NewPgCategoryRepository(pool)
-
-	items, err := repo.GetAll(ctx)
-	if err != nil {
-		log.Error("could not get items", err)
-		os.Exit(1)
-	}
-	for _, item := range items {
-		log.Info("Getting item", item)
-	}
-
+	repo := repository.NewPgCategoryRepository(pool)
+	serv := service.NewServiceCategory(repo)
+	r := gin.Default()
+	v1.InitCategoryRoutes(r.Group("/api"), serv)
+	r.Run()
 }
 
 func setupLogger(env string) *slog.Logger {

@@ -5,6 +5,6 @@ import (
 	"realtimemap-service/internal/handler/dto"
 )
 
-type ServiceCategory interface {
+type CategoryService interface {
 	GetAll(ctx context.Context) ([]dto.CategoryResponse, error)
 }
