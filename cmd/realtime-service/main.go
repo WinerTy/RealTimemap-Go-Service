@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"realtimemap-service/internal/app/repository/category"
@@ -17,18 +18,18 @@ const (
 func main() {
 	cfg := config.MustLoad()
 	log := setupLogger(cfg.Env)
-
-	storage, err := postgres.NewStorage(cfg.Database.BuildURL())
+	ctx := context.Background()
+	pool, err := postgres.NewStorage(ctx, cfg.Database.BuildURL())
 	if err != nil {
 		log.Error("could not connect to database", err)
 		os.Exit(1)
 	}
-	defer storage.Db.Close()
+	defer pool.Close()
 
 	// TODO Это на тест :)
-	repo := category.NewPgCategoryRepository(storage.Db)
+	repo := category.NewPgCategoryRepository(pool)
 
-	items, err := repo.GetAll()
+	items, err := repo.GetAll(ctx)
 	if err != nil {
 		log.Error("could not get items", err)
 		os.Exit(1)

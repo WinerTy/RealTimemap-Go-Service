@@ -1,22 +1,19 @@
 package postgres
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
 
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Storage struct {
-	Db *sql.DB
-}
-
-func NewStorage(dbUrl string) (*Storage, error) {
+func NewStorage(ctx context.Context, dbUrl string) (*pgxpool.Pool, error) {
 	const fn = "storage.postgres.New"
 
-	db, err := sql.Open("postgres", dbUrl)
+	pool, err := pgxpool.New(ctx, dbUrl)
 	if err != nil {
 		return nil, fmt.Errorf("%s, %w", fn, err)
 	}
-	return &Storage{Db: db}, nil
+
+	return pool, nil
 }
