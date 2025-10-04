@@ -14,6 +14,7 @@ type Config struct {
 	Env        string `yaml:"env" env-default:"production"`
 	Database   `yaml:"database"`
 	HTTPServer `yaml:"http_server"`
+	Redis      `yaml:"redis"`
 }
 
 type Database struct {
@@ -22,6 +23,11 @@ type Database struct {
 	Host     string `yaml:"host" env-default:"localhost"`
 	Port     int    `yaml:"port" env-default:"5432"`
 	DbName   string `yaml:"db_name" env-required:"true"`
+}
+
+type Redis struct {
+	Url string `yaml:"url" env-default:"localhost:6379"`
+	Use bool   `yaml:"use" env-default:"false"`
 }
 
 func (d *Database) BuildURL() string {

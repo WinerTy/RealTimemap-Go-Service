@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"realtimemap-service/internal/domain/category"
+	"realtimemap-service/internal/pkg/cache"
+	"realtimemap-service/internal/transport/http/middleware"
 	"time"
 
-	"github.com/gin-contrib/cache"
-	"github.com/gin-contrib/cache/persistence"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,13 +20,15 @@ type Params struct {
 	PageSize int `form:"page_size"`
 }
 
-func InitCategoryRoutes(g *gin.RouterGroup, categoryService category.Service, store *persistence.InMemoryStore) {
-
+func InitCategoryRoutes(g *gin.RouterGroup, categoryService category.Service, store cache.Store) {
 	r := &CategoryRoutes{categoryService}
 
+	cache1min := middleware.CacheMiddleware(store, time.Minute)
 	categoryRoutes := g.Group("/category")
+
+	categoryRoutes.Use(cache1min)
 	{
-		categoryRoutes.GET("/", cache.CachePage(store, time.Minute, r.GetAll))
+		categoryRoutes.GET("/", r.GetAll)
 	}
 }
 
