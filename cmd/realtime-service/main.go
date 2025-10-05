@@ -52,7 +52,6 @@ func main() {
 
 	r := gin.Default()
 	myhttp.InitCategoryRoutes(r.Group("/api"), serv, store)
-
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: r.Handler(),

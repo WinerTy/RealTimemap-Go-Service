@@ -16,8 +16,8 @@ type CategoryRoutes struct {
 }
 
 type Params struct {
-	Page     int `form:"page"`
-	PageSize int `form:"page_size"`
+	Page     int `form:"page" default:"1"`
+	PageSize int `form:"page_size" default:"10"`
 }
 
 func InitCategoryRoutes(g *gin.RouterGroup, categoryService category.Service, store cache.Store) {
@@ -25,10 +25,9 @@ func InitCategoryRoutes(g *gin.RouterGroup, categoryService category.Service, st
 
 	cache1min := middleware.CacheMiddleware(store, time.Minute)
 	categoryRoutes := g.Group("/category")
-
-	categoryRoutes.Use(cache1min)
+	normalizeQueryParams := middleware.NormalizeQueryParams(Params{})
 	{
-		categoryRoutes.GET("/", r.GetAll)
+		categoryRoutes.GET("/", normalizeQueryParams, cache1min, r.GetAll)
 	}
 }
 
@@ -45,7 +44,7 @@ func (r *CategoryRoutes) GetAll(c *gin.Context) {
 	}
 
 	if params.PageSize <= 0 {
-		params.PageSize = 15
+		params.PageSize = 10
 	}
 
 	if params.PageSize > 150 {
@@ -63,9 +62,6 @@ func (r *CategoryRoutes) GetAll(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": http.StatusOK,
-		"data":   response,
-	})
+	c.JSON(http.StatusOK, response)
 	return
 }

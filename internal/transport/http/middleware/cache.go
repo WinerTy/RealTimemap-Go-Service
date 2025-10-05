@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"realtimemap-service/internal/pkg/cache"
 	"realtimemap-service/internal/pkg/logger/sl"
+	"reflect"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+const HeaderCache = "X-Cache"
 
 type responseBodyWriter struct {
 	gin.ResponseWriter
@@ -30,15 +34,19 @@ func CacheMiddleware(store cache.Store, duration time.Duration) gin.HandlerFunc 
 			return
 		}
 
-		// Формирования ключа и контекста
+		// ПОлучение кэша по ключу на основе валидированных параметров
+		cacheKey, exists := c.Get(CacheKey)
+		if !exists {
+			c.Next()
+			return
+		}
 
-		key := c.Request.URL.RequestURI()
+		key := cacheKey.(string)
 		ctx := c.Request.Context()
 
 		// Проверка Кэша, и отдаем кэшированный ответ
 		if item, found := store.Get(ctx, key); found {
-			c.Header("Cache-Control", "max-age="+fmt.Sprint(duration/time.Second))
-			c.Header("X-Cache", "HIT")
+			c.Header(HeaderCache, "HIT")
 			for h, v := range item.Headers {
 				c.Writer.Header()[h] = v
 			}
@@ -52,12 +60,10 @@ func CacheMiddleware(store cache.Store, duration time.Duration) gin.HandlerFunc 
 
 		// Продолжаем запрос
 		c.Next()
-
-		slog.Debug("Запрос, Кэша нет")
-
-		c.Header("X-Cache", "MISS")
+		c.Header(HeaderCache, "MISS")
 
 		if c.Writer.Status() == http.StatusOK {
+			c.Header(HeaderCache, "HIT")
 			item := cache.CacheItem{
 				Value:      blw.body.Bytes(),
 				StatusCode: c.Writer.Status(),
@@ -70,4 +76,22 @@ func CacheMiddleware(store cache.Store, duration time.Duration) gin.HandlerFunc 
 			}
 		}
 	}
+}
+
+func generateCacheKey(path string, params interface{}) string {
+	v := reflect.ValueOf(params).Elem()
+	t := v.Type()
+
+	queryValues := url.Values{}
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		tag := t.Field(i).Tag.Get("form")
+		if tag == "" {
+			continue
+		}
+		queryValues.Add(tag, fmt.Sprintf("%v", field.Interface()))
+	}
+
+	return fmt.Sprintf("%s?%s", path, queryValues.Encode())
 }
