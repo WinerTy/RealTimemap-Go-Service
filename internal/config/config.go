@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"realtimemap-service/internal/pkg/logger/sl"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type Config struct {
-	Env        string `yaml:"env" env-default:"production"`
-	Database   `yaml:"database"`
-	HTTPServer `yaml:"http_server"`
+	Env           string `yaml:"env" env-default:"production"`
+	CacheStrategy string `yaml:"cache_strategy" env-default:"noop"`
+	Database      `yaml:"database"`
+	HTTPServer    `yaml:"http_server"`
+	Redis         `yaml:"redis"`
 }
 
 type Database struct {
@@ -21,6 +24,12 @@ type Database struct {
 	Host     string `yaml:"host" env-default:"localhost"`
 	Port     int    `yaml:"port" env-default:"5432"`
 	DbName   string `yaml:"db_name" env-required:"true"`
+}
+
+type Redis struct {
+	Url      string `yaml:"url" env-default:"localhost:6379"`
+	Password string `yaml:"password" env-default:""`
+	DB       int    `yaml:"db" env-default:"0"`
 }
 
 func (d *Database) BuildURL() string {
@@ -37,13 +46,13 @@ func MustLoad() *Config {
 	configPath := "./config/config.yaml"
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file not found: %s", configPath)
+		log.Fatal("Config file does not exist", sl.Err(err))
 	}
 
 	var cfg Config
 
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatal("Cant read config file", err)
+		log.Fatal("Cant read config file", sl.Err(err))
 	}
 
 	return &cfg

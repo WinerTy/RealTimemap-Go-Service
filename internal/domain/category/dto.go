@@ -1,6 +1,4 @@
-package dto
-
-import "realtimemap-service/internal/entity"
+package category
 
 type CategoryResponse struct {
 	ID    int    `json:"id"`
@@ -8,7 +6,7 @@ type CategoryResponse struct {
 	Color string `json:"color"`
 }
 
-func ToCategoryResponse(category *entity.Category) CategoryResponse {
+func ToCategoryResponse(category *Category) CategoryResponse {
 	return CategoryResponse{
 		ID:    category.ID,
 		Name:  category.Name,
@@ -16,7 +14,7 @@ func ToCategoryResponse(category *entity.Category) CategoryResponse {
 	}
 }
 
-func ToListCategoryResponse(categories []*entity.Category) []CategoryResponse {
+func ToListCategoryResponse(categories []*Category) []CategoryResponse {
 	listCategoryResponse := make([]CategoryResponse, len(categories))
 	for i, category := range categories {
 		listCategoryResponse[i] = ToCategoryResponse(category)

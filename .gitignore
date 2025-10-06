@@ -22,9 +22,10 @@
 # Go workspace file
 go.work
 
+# env
+*.env
+!/.env
 
 # Ide
 .idea
 
-# env
-*.env
