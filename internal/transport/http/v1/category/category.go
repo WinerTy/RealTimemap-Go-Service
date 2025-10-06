@@ -24,7 +24,8 @@ func InitCategoryRoutes(g *gin.RouterGroup, categoryService category.Service, st
 	r := &CategoryRoutes{categoryService}
 
 	cache1min := middleware.CacheMiddleware(store, time.Minute)
-	categoryRoutes := g.Group("/category")
+	categoryRoutes := g.Group("/")
+
 	normalizeQueryParams := middleware.NormalizeQueryParams(Params{})
 	{
 		categoryRoutes.GET("/", normalizeQueryParams, cache1min, r.GetAll)

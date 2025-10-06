@@ -41,6 +41,7 @@ func CacheMiddleware(store cache.Store, duration time.Duration) gin.HandlerFunc 
 			return
 		}
 
+		// Преобразование
 		key := cacheKey.(string)
 		ctx := c.Request.Context()
 
@@ -55,6 +56,7 @@ func CacheMiddleware(store cache.Store, duration time.Duration) gin.HandlerFunc 
 			return
 		}
 
+		// Записываем ответ в кэш для последущих запросов
 		blw := &responseBodyWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 		c.Writer = blw
 

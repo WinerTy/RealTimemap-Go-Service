@@ -7,13 +7,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"realtimemap-service/internal/app"
 	"realtimemap-service/internal/config"
-	"realtimemap-service/internal/database/postgres"
-	"realtimemap-service/internal/pkg/cache"
 	"realtimemap-service/internal/pkg/logger/sl"
-	repository "realtimemap-service/internal/repository/category/postgres"
-	service "realtimemap-service/internal/service/category"
-	myhttp "realtimemap-service/internal/transport/http/v1/category" // TODO временно
+	v1 "realtimemap-service/internal/transport/http/v1"
 	"syscall"
 	"time"
 
@@ -22,36 +19,26 @@ import (
 
 const (
 	envLocal = "local"
-	envDev   = "Dev"
-	envProd  = "Prod"
+	envDev   = "dev"
+	envProd  = "prod"
 )
 
 func main() {
 	cfg := config.MustLoad()
 	log := setupLogger(cfg.Env)
 	ctx := context.Background()
-	var store cache.Store
-	redisClient, err := config.SetupRedis(ctx, cfg)
-	if err != nil {
-		log.Error("Error setting up redis client")
-		store = cache.NewNoOpCache()
-	} else {
-		store = cache.NewRedisCache(redisClient)
 
-	}
-
-	pool, err := postgres.NewStorage(ctx, cfg.Database.BuildURL())
+	container, err := app.NewContainer(ctx, cfg, log)
 	if err != nil {
-		log.Error("could not connect to database", sl.Err(err))
+		log.Error("Error creating container", sl.Err(err))
 		os.Exit(1)
 	}
-	defer pool.Close()
-
-	repo := repository.NewPgCategoryRepository(pool)
-	serv := service.NewServiceCategory(repo)
+	defer container.DbPool.Close()
+	defer container.Redis.Close()
 
 	r := gin.Default()
-	myhttp.InitCategoryRoutes(r.Group("/api"), serv, store)
+	v1.InitV1Routers(r, container)
+
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: r.Handler(),
