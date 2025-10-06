@@ -54,3 +54,11 @@ func NewContainer(ctx context.Context, cfg *config.Config, logger *slog.Logger) 
 		CategoryService:    CategoryService,
 	}, nil
 }
+
+func (c *Container) Close() error {
+	if err := c.Redis.Close(); err != nil {
+		c.Logger.Error("could not close redis", sl.Err(err))
+		return err
+	}
+	return nil
+}

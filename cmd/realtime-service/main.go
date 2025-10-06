@@ -33,8 +33,13 @@ func main() {
 		log.Error("Error creating container", sl.Err(err))
 		os.Exit(1)
 	}
+	// Закрытие всех соединений
 	defer container.DbPool.Close()
-	defer container.Redis.Close()
+	defer func() {
+		if err := container.Close(); err != nil {
+			log.Error("Error closing container", sl.Err(err))
+		}
+	}()
 
 	r := gin.Default()
 	v1.InitV1Routers(r, container)
