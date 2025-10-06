@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type CacheItem struct {
+type Item struct {
 	Value      []byte
 	StatusCode int
 	Headers    map[string][]string
@@ -13,6 +13,6 @@ type CacheItem struct {
 }
 
 type Store interface {
-	Get(ctx context.Context, key string) (CacheItem, bool)
-	Set(ctx context.Context, key string, item CacheItem, ttl time.Duration) error
+	Get(ctx context.Context, key string) (Item, bool)
+	Set(ctx context.Context, key string, item Item, ttl time.Duration) error
 }

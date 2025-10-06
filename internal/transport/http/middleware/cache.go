@@ -66,7 +66,7 @@ func CacheMiddleware(store cache.Store, duration time.Duration) gin.HandlerFunc 
 
 		if c.Writer.Status() == http.StatusOK {
 			c.Header(HeaderCache, "HIT")
-			item := cache.CacheItem{
+			item := cache.Item{
 				Value:      blw.body.Bytes(),
 				StatusCode: c.Writer.Status(),
 				Headers:    c.Writer.Header().Clone(),

@@ -6,7 +6,7 @@ import (
 )
 
 type Service interface {
-	GetAll(ctx context.Context, page, pageSize int) (*pagination.Response[CategoryResponse], error)
+	GetAll(ctx context.Context, page, pageSize int) (*pagination.Response[Response], error)
 }
 
 type Repository interface {

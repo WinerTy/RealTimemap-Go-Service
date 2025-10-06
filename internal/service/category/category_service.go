@@ -17,20 +17,20 @@ func NewServiceCategory(categoryRepo categoryrepo.Repository) category.Service {
 	return &serviceCategory{categoryRepo}
 }
 
-func (s *serviceCategory) GetAll(ctx context.Context, page, pageSize int) (*pagination.Response[category.CategoryResponse], error) {
+func (s *serviceCategory) GetAll(ctx context.Context, page, pageSize int) (*pagination.Response[category.Response], error) {
 	offset := pagination.Offset(page, pageSize)
 	var categories []*category.Category
 	var categoryErr, countErr error
 	var total int
 	var wg sync.WaitGroup
 
-	wg.Add(2)
-
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		categories, categoryErr = s.categoryRepo.GetAll(ctx, pageSize, offset)
 	}()
 
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		total, countErr = s.categoryRepo.Count(ctx)

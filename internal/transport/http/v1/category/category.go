@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type CategoryRoutes struct {
+type Routes struct {
 	categoryService category.Service
 }
 
@@ -21,7 +21,7 @@ type Params struct {
 }
 
 func InitCategoryRoutes(g *gin.RouterGroup, categoryService category.Service, store cache.Store) {
-	r := &CategoryRoutes{categoryService}
+	r := &Routes{categoryService}
 
 	cache1min := middleware.CacheMiddleware(store, time.Minute)
 	categoryRoutes := g.Group("/")
@@ -32,7 +32,7 @@ func InitCategoryRoutes(g *gin.RouterGroup, categoryService category.Service, st
 	}
 }
 
-func (r *CategoryRoutes) GetAll(c *gin.Context) {
+func (r *Routes) GetAll(c *gin.Context) {
 	var params Params
 
 	if err := c.ShouldBindQuery(&params); err != nil {
