@@ -1,0 +1,50 @@
+package mark
+
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+)
+
+type Mark struct {
+	ID      int      // ID айди
+	OwnerID int      // OwnerID айди юзера
+	Name    string   // Name название метки
+	Geom    Geometry // Геометрия, прихоидт из бд в виде JSON
+
+}
+
+type Geometry struct {
+	Type        string    `json:"type"`
+	Coordinates []float64 `json:"coordinates"`
+}
+
+func (g *Geometry) Scan(src interface{}) error {
+	if src == nil {
+		return nil
+	}
+	var source []byte
+
+	switch v := src.(type) {
+	case []byte:
+		source = v
+	case string:
+		source = []byte(v)
+	default:
+		return fmt.Errorf("unsupported type for Geometry: %T", src)
+	}
+
+	if len(source) == 0 {
+		return nil
+	}
+
+	return json.Unmarshal(source, g)
+}
+
+// Value реализует интерфейс driver.Valuer (для записи в БД).
+func (g Geometry) Value() (driver.Value, error) {
+	if len(g.Coordinates) == 0 {
+		return nil, nil
+	}
+	return json.Marshal(g)
+}

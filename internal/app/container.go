@@ -6,9 +6,11 @@ import (
 	"realtimemap-service/internal/config"
 	"realtimemap-service/internal/database/postgres"
 	categorydomain "realtimemap-service/internal/domain/category"
+	markdomain "realtimemap-service/internal/domain/mark"
 	"realtimemap-service/internal/pkg/cache"
 	"realtimemap-service/internal/pkg/logger/sl"
 	repository "realtimemap-service/internal/repository/category/postgres"
+	mark_repo "realtimemap-service/internal/repository/mark/postgres"
 	"realtimemap-service/internal/service/category"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,6 +27,7 @@ type Container struct {
 	Cache  cache.Store
 
 	CategoryRepository categorydomain.Repository
+	MarkRepository     markdomain.Repository
 
 	CategoryService categorydomain.Service
 }
@@ -42,6 +45,8 @@ func NewContainer(ctx context.Context, cfg *config.Config, logger *slog.Logger) 
 	CategoryRepository := repository.NewPgCategoryRepository(pool)
 	CategoryService := category.NewServiceCategory(CategoryRepository)
 
+	MarkRepository := mark_repo.NewPgMarkRepository(pool)
+
 	return &Container{
 		Config: cfg,
 		Logger: logger,
@@ -52,6 +57,8 @@ func NewContainer(ctx context.Context, cfg *config.Config, logger *slog.Logger) 
 
 		CategoryRepository: CategoryRepository,
 		CategoryService:    CategoryService,
+
+		MarkRepository: MarkRepository,
 	}, nil
 }
 

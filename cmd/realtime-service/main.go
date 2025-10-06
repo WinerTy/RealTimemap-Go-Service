@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -33,6 +34,7 @@ func main() {
 		log.Error("Error creating container", sl.Err(err))
 		os.Exit(1)
 	}
+
 	// Закрытие всех соединений
 	defer container.DbPool.Close()
 	defer func() {
@@ -40,6 +42,14 @@ func main() {
 			log.Error("Error closing container", sl.Err(err))
 		}
 	}()
+
+	val, err := container.MarkRepository.GetByOwner(ctx, 1)
+	if err != nil {
+		log.Error("Error getting mark by owner", sl.Err(err))
+	}
+	for _, mark := range val {
+		fmt.Println(mark)
+	}
 
 	r := gin.Default()
 	v1.InitV1Routers(r, container)
@@ -49,7 +59,6 @@ func main() {
 		Handler: r.Handler(),
 	}
 	go func() {
-		// service connections
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("Error starting server", sl.Err(err))
 		}
