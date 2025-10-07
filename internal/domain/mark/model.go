@@ -10,8 +10,8 @@ type Mark struct {
 	ID      int      // ID айди
 	OwnerID int      // OwnerID айди юзера
 	Name    string   // Name название метки
-	Geom    Geometry // Геометрия, прихоидт из бд в виде JSON
-
+	Geom    Geometry // Geom Геометрия, прихоидт из бд в виде JSON
+	IsEnded bool
 }
 
 type Geometry struct {

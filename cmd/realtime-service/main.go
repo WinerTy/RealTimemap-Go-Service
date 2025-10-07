@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -42,14 +41,6 @@ func main() {
 			log.Error("Error closing container", sl.Err(err))
 		}
 	}()
-
-	val, err := container.MarkRepository.GetByOwner(ctx, 1)
-	if err != nil {
-		log.Error("Error getting mark by owner", sl.Err(err))
-	}
-	for _, mark := range val {
-		fmt.Println(mark)
-	}
 
 	r := gin.Default()
 	v1.InitV1Routers(r, container)
