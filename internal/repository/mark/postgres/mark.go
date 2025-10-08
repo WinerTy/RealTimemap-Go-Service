@@ -46,24 +46,32 @@ func (r *PgMarkRepository) GetByOwner(ctx context.Context, ownerID int) ([]*mark
 
 func (r *PgMarkRepository) GetNearestMarks(ctx context.Context, filter mark.Filter) ([]*mark.Mark, error) {
 	query := `
-		SELECT
-			id,
-			owner_id,
-			mark_name,
-			ST_AsGeoJSON(geom),
-			is_ended
-		FROM
-			marks
-		WHERE
-		    (geohash LIKE ANY($1)) AND
-			ST_DWithin(
-				ST_Transform(geom, 3857),
-				ST_Transform(ST_SetSRID(ST_MakePoint($2, $3), $4), 3857),
-				$5
-			)
-			AND start_at <= $7
-			AND (start_at + (duration * INTERVAL '1 hour')) > $6
-		`
+        SELECT
+            m.id,
+            m.mark_name,
+            m.owner_id,
+            m.additional_info,
+            m.photo,
+            ST_AsGeoJSON(m.geom) as geom,
+            m.is_ended,
+            (m.start_at + (m.duration * INTERVAL '1 hour')) as end_at,
+            c.id as category_id,
+            c.category_name,
+            c.color,
+            c.icon
+        FROM
+            marks m
+        LEFT JOIN categories c ON m.category_id = c.id
+        WHERE
+            m.geohash = ANY($1)
+            AND ST_DWithin(
+                m.geom,
+                ST_SetSRID(ST_MakePoint($2, $3), $4),
+                $5
+            )
+            AND m.start_at <= $7
+            AND (m.start_at + (m.duration * INTERVAL '1 hour')) > $6
+    `
 
 	rows, err := r.db.Query(ctx, query,
 		filter.Geohash,           // $1
@@ -82,7 +90,9 @@ func (r *PgMarkRepository) GetNearestMarks(ctx context.Context, filter mark.Filt
 	var marks []*mark.Mark
 	for rows.Next() {
 		var item mark.Mark
-		err := rows.Scan(&item.ID, &item.OwnerID, &item.Name, &item.Geom, &item.IsEnded)
+		err := rows.Scan(&item.ID, &item.Name, &item.OwnerID, &item.AdditionalInfo,
+			&item.Photo, &item.Geom, &item.IsEnded, &item.EndAt,
+			&item.Category.ID, &item.Category.Name, &item.Category.Color, &item.Category.Icon)
 		if err != nil {
 			slog.Error("GetNearest err:", sl.Err(err))
 			return nil, err

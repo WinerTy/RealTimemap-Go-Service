@@ -4,14 +4,22 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"realtimemap-service/internal/domain/category"
+	"realtimemap-service/internal/pkg/entity"
+	"time"
 )
 
 type Mark struct {
-	ID      int      // ID айди
-	OwnerID int      // OwnerID айди юзера
-	Name    string   // Name название метки
-	Geom    Geometry // Geom Геометрия, прихоидт из бд в виде JSON
-	IsEnded bool
+	ID             int      // ID айди
+	OwnerID        int      // OwnerID айди юзера
+	Name           string   // Name название метки
+	AdditionalInfo string   // AdditionalInfo доп описание
+	Geom           Geometry // Geom Геометрия, прихоидт из бд в виде JSON
+	IsEnded        bool
+	DurationHours  int
+	EndAt          time.Time
+	Photo          []entity.Image
+	Category       category.Category
 }
 
 type Geometry struct {
