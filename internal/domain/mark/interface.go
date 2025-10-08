@@ -10,4 +10,5 @@ type Repository interface {
 }
 
 type Service interface {
+	GetNearestMark(ctx context.Context, req FilterRequest) ([]Response, error)
 }

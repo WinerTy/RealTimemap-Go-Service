@@ -14,5 +14,5 @@ import (
 func InitV1Routers(g *gin.Engine, container *app.Container) {
 	r := g.Group("/api/v1")
 	category.InitCategoryRoutes(r.Group("/category"), container.CategoryService, container.Cache)
-	mark.InitMarkRoutes(r.Group("/marks"), container.MarkRepository)
+	mark.InitMarkRoutes(r.Group("/marks"), container.MarkService)
 }

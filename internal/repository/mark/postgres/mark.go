@@ -45,32 +45,55 @@ func (r *PgMarkRepository) GetByOwner(ctx context.Context, ownerID int) ([]*mark
 }
 
 func (r *PgMarkRepository) GetNearestMarks(ctx context.Context, filter mark.Filter) ([]*mark.Mark, error) {
+	//query := `
+	//    SELECT
+	//        m.id,
+	//        m.mark_name,
+	//        m.owner_id,
+	//        m.additional_info,
+	//        m.photo,
+	//        ST_AsGeoJSON(m.geom) as geom,
+	//        m.is_ended,
+	//        (m.start_at + (m.duration * INTERVAL '1 hour')) as end_at,
+	//        c.id,
+	//        c.category_name,
+	//        c.color,
+	//        c.icon
+	//    FROM
+	//        marks m
+	//    LEFT JOIN categories c ON m.category_id = c.id
+	//    WHERE
+	//        m.geohash = ANY($1)
+	//        AND ST_DWithin(
+	//            m.geom,
+	//            ST_SetSRID(ST_MakePoint($2, $3), $4),
+	//            $5
+	//        )
+	//        AND m.start_at <= $7
+	//       	AND ($8 OR (m.start_at + (m.duration * INTERVAL '1 hour')) > $6)
+	//`
 	query := `
         SELECT
-            m.id,
-            m.mark_name,
-            m.owner_id,
-            m.additional_info,
-            m.photo,
-            ST_AsGeoJSON(m.geom) as geom,
-            m.is_ended,
-            (m.start_at + (m.duration * INTERVAL '1 hour')) as end_at,
-            c.id as category_id,
-            c.category_name,
-            c.color,
-            c.icon
+            id,
+            mark_name,
+            owner_id,
+            additional_info,
+            photo,
+            ST_AsGeoJSON(geom) as geom,
+            is_ended,
+            duration,
+            (start_at + (duration * INTERVAL '1 hour')) as end_at
         FROM
-            marks m
-        LEFT JOIN categories c ON m.category_id = c.id
+            marks
         WHERE
-            m.geohash = ANY($1)
+            geohash = ANY($1)
             AND ST_DWithin(
-                m.geom,
+                geom,
                 ST_SetSRID(ST_MakePoint($2, $3), $4),
                 $5
             )
-            AND m.start_at <= $7
-           	AND ($8 OR (m.start_at + (m.duration * INTERVAL '1 hour')) > $6)
+            AND start_at <= $7
+           	AND ($8 OR (start_at + (duration * INTERVAL '1 hour')) > $6)
     `
 
 	rows, err := r.db.Query(ctx, query,
@@ -91,13 +114,15 @@ func (r *PgMarkRepository) GetNearestMarks(ctx context.Context, filter mark.Filt
 	var marks []*mark.Mark
 	for rows.Next() {
 		var item mark.Mark
+
 		err := rows.Scan(&item.ID, &item.Name, &item.OwnerID, &item.AdditionalInfo,
-			&item.Photo, &item.Geom, &item.IsEnded, &item.EndAt,
-			&item.Category.ID, &item.Category.Name, &item.Category.Color, &item.Category.Icon)
+			&item.Photo, &item.Geom, &item.IsEnded, &item.DurationHours, &item.EndAt)
+		//&item.Category.ID, &item.Category.Name, &item.Category.Color, &item.Category.Icon)
 		if err != nil {
 			slog.Error("GetNearest err:", sl.Err(err))
 			return nil, err
 		}
+
 		marks = append(marks, &item)
 	}
 	if err := rows.Err(); err != nil {

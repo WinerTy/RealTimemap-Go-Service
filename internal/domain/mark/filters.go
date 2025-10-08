@@ -6,8 +6,6 @@ import (
 	"github.com/mmcloughlin/geohash"
 )
 
-type TimeRangeType string
-
 const (
 	DefaultRadius   float64 = 5000.0
 	DefaultSRID     int     = 4326
@@ -64,4 +62,36 @@ func NewFilter(latitude, longitude, radius float64,
 	filter.SearchWindowEnd = refTime.Add(duration)
 
 	return filter
+}
+
+type FilterRequest struct {
+	// Геоданные
+	Longitude float64 `form:"longitude" binding:"required,longitude"`
+	Latitude  float64 `form:"latitude" binding:"required,latitude"`
+	Radius    float64 `form:"radius" binding:"omitempty,gt=0,max=10000"`
+	SRID      int     `form:"srid" binding:"omitempty,gt=0"`
+
+	// Временные
+	ReferenceTime time.Time `form:"date" binding:"omitempty"  time_format:"2006-01-02"`
+	DurationHours int       `form:"duration" binding:"omitempty,oneof=12 24 48"`
+	ShowEnded     bool      `form:"show_ended"`
+}
+
+func (f *FilterRequest) SetTimeRange() {
+	if f.DurationHours == 0 {
+		f.DurationHours = DefaultDuration
+	}
+	if f.ReferenceTime.IsZero() {
+		f.ReferenceTime = time.Now()
+	}
+}
+
+func (f *FilterRequest) SetDefault() {
+	if f.Radius == 0 {
+		f.Radius = DefaultRadius
+	}
+	if f.SRID == 0 {
+		f.SRID = DefaultSRID
+	}
+	f.SetTimeRange()
 }

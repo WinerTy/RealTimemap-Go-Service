@@ -15,10 +15,6 @@ type Image struct {
 	Height        int      `json:"height"`
 	FileID        string   `json:"file_id"`
 	UploadStorage string   `json:"upload_storage"`
-	UploadedAt    string   `json:"uploaded_at"`
-	Path          string   `json:"path"`
-	Url           string   `json:"url"`
-	Saved         bool     `json:"saved"`
 }
 
 //[{"content_path": null, "filename":

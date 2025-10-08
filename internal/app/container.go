@@ -5,13 +5,14 @@ import (
 	"log/slog"
 	"realtimemap-service/internal/config"
 	"realtimemap-service/internal/database/postgres"
-	categorydomain "realtimemap-service/internal/domain/category"
-	markdomain "realtimemap-service/internal/domain/mark"
+	categoryDomain "realtimemap-service/internal/domain/category"
+	markDomain "realtimemap-service/internal/domain/mark"
 	"realtimemap-service/internal/pkg/cache"
 	"realtimemap-service/internal/pkg/logger/sl"
-	repository "realtimemap-service/internal/repository/category/postgres"
-	mark_repo "realtimemap-service/internal/repository/mark/postgres"
+	categoryRepo "realtimemap-service/internal/repository/category/postgres"
+	markRepo "realtimemap-service/internal/repository/mark/postgres"
 	"realtimemap-service/internal/service/category"
+	markService "realtimemap-service/internal/service/mark"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -26,10 +27,11 @@ type Container struct {
 	Redis  *redis.Client
 	Cache  cache.Store
 
-	CategoryRepository categorydomain.Repository
-	MarkRepository     markdomain.Repository
+	CategoryRepository categoryDomain.Repository
+	MarkRepository     markDomain.Repository
 
-	CategoryService categorydomain.Service
+	CategoryService categoryDomain.Service
+	MarkService     markDomain.Service
 }
 
 // NewContainer Фабрика, которая собирает все зависимости проекта в единый контейнер
@@ -42,10 +44,11 @@ func NewContainer(ctx context.Context, cfg *config.Config, logger *slog.Logger) 
 
 	cacheStore, redisCli := config.InitCache(ctx, cfg)
 
-	CategoryRepository := repository.NewPgCategoryRepository(pool)
+	CategoryRepository := categoryRepo.NewPgCategoryRepository(pool)
 	CategoryService := category.NewServiceCategory(CategoryRepository)
 
-	MarkRepository := mark_repo.NewPgMarkRepository(pool)
+	MarkRepository := markRepo.NewPgMarkRepository(pool)
+	MarkService := markService.NewService(MarkRepository)
 
 	return &Container{
 		Config: cfg,
@@ -59,6 +62,7 @@ func NewContainer(ctx context.Context, cfg *config.Config, logger *slog.Logger) 
 		CategoryService:    CategoryService,
 
 		MarkRepository: MarkRepository,
+		MarkService:    MarkService,
 	}, nil
 }
 
