@@ -2,19 +2,21 @@ package mark
 
 import (
 	"log/slog"
+	"realtimemap-service/internal/domain/category"
 	"time"
 )
 
 type Response struct {
-	ID             int       `json:"id"`
-	Name           string    `json:"mark_name"`
-	OwnerID        int       `json:"owner_id"`
-	AdditionalInfo *string   `json:"additional_info"`
-	Geom           Geometry  `json:"geom"`
-	IsEnded        bool      `json:"is_ended"`
-	DurationHours  int       `json:"duration"`
-	EndAt          time.Time `json:"end_at"`
-	Photo          []string  `json:"photo"`
+	ID             int               `json:"id"`
+	Name           string            `json:"mark_name"`
+	OwnerID        int               `json:"owner_id"`
+	AdditionalInfo *string           `json:"additional_info"`
+	Geom           Geometry          `json:"geom"`
+	IsEnded        bool              `json:"is_ended"`
+	DurationHours  int               `json:"duration"`
+	EndAt          time.Time         `json:"end_at"`
+	Photo          []string          `json:"photo"`
+	Category       category.Response `json:"category"`
 }
 
 func ToMarkResponse(item *Mark) Response {
@@ -34,6 +36,7 @@ func ToMarkResponse(item *Mark) Response {
 		DurationHours:  item.DurationHours,
 		EndAt:          item.EndAt,
 		Photo:          photoUrls,
+		Category:       category.ToCategoryResponse(item.Category),
 	}
 }
 

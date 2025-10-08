@@ -4,6 +4,7 @@ type Response struct {
 	ID    int    `json:"id"`
 	Name  string `json:"category_name"`
 	Color string `json:"color"`
+	Icon  string `json:"icon"`
 }
 
 func ToCategoryResponse(category *Category) Response {
@@ -11,6 +12,7 @@ func ToCategoryResponse(category *Category) Response {
 		ID:    category.ID,
 		Name:  category.Name,
 		Color: category.Color,
+		Icon:  category.Icon.BuildUrl(),
 	}
 }
 

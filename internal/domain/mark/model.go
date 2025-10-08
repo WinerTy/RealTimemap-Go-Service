@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"realtimemap-service/internal/domain/category"
 	"realtimemap-service/internal/pkg/entity"
 	"time"
 )
@@ -18,7 +19,7 @@ type Mark struct {
 	DurationHours  int
 	EndAt          time.Time
 	Photo          []entity.Image
-	//Category       *category.Category
+	Category       *category.Category
 }
 
 type Geometry struct {
