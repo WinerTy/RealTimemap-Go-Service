@@ -70,7 +70,7 @@ func (r *PgMarkRepository) GetNearestMarks(ctx context.Context, filter mark.Filt
                 $5
             )
             AND m.start_at <= $7
-            AND (m.start_at + (m.duration * INTERVAL '1 hour')) > $6
+           	AND ($8 OR (m.start_at + (m.duration * INTERVAL '1 hour')) > $6)
     `
 
 	rows, err := r.db.Query(ctx, query,
@@ -81,6 +81,7 @@ func (r *PgMarkRepository) GetNearestMarks(ctx context.Context, filter mark.Filt
 		filter.Radius,            // $5
 		filter.SearchWindowStart, // $6
 		filter.SearchWindowEnd,   // $7
+		filter.ShowEnded,         // $8
 	)
 	if err != nil {
 		slog.Error("GetNearest err:", sl.Err(err))

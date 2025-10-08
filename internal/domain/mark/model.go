@@ -13,7 +13,7 @@ type Mark struct {
 	ID             int      // ID айди
 	OwnerID        int      // OwnerID айди юзера
 	Name           string   // Name название метки
-	AdditionalInfo string   // AdditionalInfo доп описание
+	AdditionalInfo *string  // AdditionalInfo доп описание
 	Geom           Geometry // Geom Геометрия, прихоидт из бд в виде JSON
 	IsEnded        bool
 	DurationHours  int
